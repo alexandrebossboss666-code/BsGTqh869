@@ -120,6 +120,9 @@
     const pendingCode = localStorage.getItem(EXPERT_PENDING_CODE_KEY);
     if(!requestedAt) return;
 
+    // Verrouillage immédiat par précaution, avant même de savoir si la connexion fonctionne
+    lockForm('Vérification…');
+
     // Le code a-t-il déjà été utilisé (validé sur test-de-reflexion.html) ?
     let usedStatus = null; // null = impossible à vérifier (pas de connexion)
     try{
