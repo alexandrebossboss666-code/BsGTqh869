@@ -52,10 +52,58 @@
     margin-bottom:20px;
     line-height:1.4;
   }
+  .condition-status{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:0.84rem;
+    font-weight:600;
+    padding:12px 14px;
+    border-radius:8px;
+    margin-bottom:20px;
+    line-height:1.4;
+  }
+  .condition-status.ok{
+    background:#e3f3da;
+    color:#153c0c;
+  }
+  .condition-status.ko{
+    background:#f2f2ef;
+    color:#6b6b67;
+  }
+  .check-icon, .cross-icon{
+    display:inline-block;
+    width:16px;
+    height:16px;
+    position:relative;
+    flex-shrink:0;
+    margin-top:2px;
+  }
+  .check-icon::after{
+    content:'';
+    position:absolute;
+    left:4px; top:1px;
+    width:5px; height:9px;
+    border-right:2.5px solid #3f7a2b;
+    border-bottom:2.5px solid #3f7a2b;
+    transform:rotate(45deg);
+  }
+  .cross-icon::before, .cross-icon::after{
+    content:'';
+    position:absolute;
+    left:2px; top:7px;
+    width:12px;
+    height:2.5px;
+    background:#8a8a85;
+    border-radius:2px;
+  }
+  .cross-icon::before{ transform:rotate(45deg); }
+  .cross-icon::after{ transform:rotate(-45deg); }
 </style>
 </head>
 <body>
   <h1>Reçois ton code du mode expert</h1>
+  <div id="conditionStatus"></div>
   <p class="note">
     Entre ton adresse email pour recevoir ton code à 6 chiffres.
     Il sera valable 10 minutes et utilisable une seule fois sur le site du test de réflexion.
@@ -91,6 +139,19 @@
 
   function isValidEmailFormat(email){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  /* ===================== Condition d'accès : 3 badges Extra en mode normal sur test-de-reflexion.html ===================== */
+  const TRIPLE_EXTRA_KEY = 'reflexion_triple_extra_normal';
+  const conditionMet = localStorage.getItem(TRIPLE_EXTRA_KEY) === 'true';
+  const conditionStatus = document.getElementById('conditionStatus');
+
+  if(conditionMet){
+    conditionStatus.className = 'condition-status ok';
+    conditionStatus.innerHTML = `<span class="check-icon"></span><span>Condition validée : tu as obtenu le badge Extra dans les 3 catégories (logos, couleurs, notes) en mode normal.</span>`;
+  } else {
+    conditionStatus.className = 'condition-status ko';
+    conditionStatus.innerHTML = `<span class="cross-icon"></span><span>Tu dois d'abord obtenir le badge Extra dans les 3 catégories (logos, couleurs, notes) en mode normal sur le test de réflexion.</span>`;
   }
 
   const EXPERT_CODE_REQUESTED_AT_KEY = 'expert_code_requested_at';
@@ -159,7 +220,12 @@
     }
   }
 
-  checkPendingCodeStatus();
+  if(!conditionMet){
+    emailInput.disabled = true;
+    sendBtn.disabled = true;
+  } else {
+    checkPendingCodeStatus();
+  }
 
   sendBtn.addEventListener('click', async () => {
     const email = emailInput.value.trim();
