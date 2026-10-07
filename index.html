@@ -99,6 +99,36 @@
   }
   .cross-icon::before{ transform:rotate(45deg); }
   .cross-icon::after{ transform:rotate(-45deg); }
+
+  .tamper-overlay{
+    position:fixed; inset:0;
+    background:rgba(20,20,18,0.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
+    padding:20px;
+  }
+  .tamper-overlay.show{ display:flex; }
+  .tamper-sheet{
+    background:#fff;
+    width:100%;
+    max-width:360px;
+    border-radius:14px;
+    padding:28px 24px;
+    text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,0.35);
+  }
+  .tamper-sheet h2{
+    font-size:1.1rem;
+    margin:0 0 14px;
+  }
+  .tamper-sheet p{
+    font-size:0.9rem;
+    line-height:1.5;
+    color:#26261f;
+    margin:0;
+  }
 </style>
 </head>
 <body>
@@ -111,6 +141,13 @@
   <input type="email" id="emailInput" placeholder="Ton adresse email">
   <button id="sendBtn">Recevoir mon code</button>
   <p id="msg"></p>
+
+  <div class="tamper-overlay" id="tamperOverlay">
+    <div class="tamper-sheet">
+      <h2>Modification détectée</h2>
+      <p>Une tentative de modification de la page a été détectée. Merci d'actualiser la page pour continuer.</p>
+    </div>
+  </div>
 
 <script>
   /* ===================== CONFIG EmailJS ===================== */
@@ -227,6 +264,21 @@
     checkPendingCodeStatus();
   }
 
+  /* ===================== Détection de falsification (DevTools) ===================== */
+  let tamperDetected = false;
+  function showTamperAlert(){
+    if(tamperDetected) return;
+    tamperDetected = true;
+    document.getElementById('tamperOverlay').classList.add('show');
+  }
+  function checkDisabledIntegrity(){
+    if(conditionMet || tamperDetected) return;
+    if(!emailInput.disabled || !sendBtn.disabled){
+      showTamperAlert();
+    }
+  }
+  setInterval(checkDisabledIntegrity, 1500);
+
   sendBtn.addEventListener('click', async () => {
     const email = emailInput.value.trim();
     msg.className = '';
@@ -280,3 +332,4 @@
 </script>
 </body>
 </html>
+
