@@ -199,7 +199,11 @@
   const sendBtn = document.getElementById('sendBtn');
   const emailInput = document.getElementById('emailInput');
 
+  // Vrai chaque fois que le formulaire DOIT être verrouillé (condition non remplie, code en attente ou déjà utilisé)
+  let formShouldBeLocked = !conditionMet;
+
   function lockForm(message){
+    formShouldBeLocked = true;
     emailInput.disabled = true;
     sendBtn.disabled = true;
     msg.className = 'success';
@@ -207,6 +211,7 @@
   }
 
   function unlockForm(message){
+    formShouldBeLocked = false;
     emailInput.disabled = false;
     sendBtn.disabled = false;
     msg.className = '';
@@ -272,7 +277,7 @@
     document.getElementById('tamperOverlay').classList.add('show');
   }
   function checkDisabledIntegrity(){
-    if(conditionMet || tamperDetected) return;
+    if(tamperDetected || !formShouldBeLocked) return;
     if(!emailInput.disabled || !sendBtn.disabled){
       showTamperAlert();
     }
@@ -280,6 +285,11 @@
   setInterval(checkDisabledIntegrity, 1500);
 
   sendBtn.addEventListener('click', async () => {
+    // Même si le "disabled" a été retiré dans l'inspecteur, on refuse l'envoi tant que le formulaire doit être verrouillé
+    if(formShouldBeLocked){
+      showTamperAlert();
+      return;
+    }
     const email = emailInput.value.trim();
     msg.className = '';
     if(!email){
@@ -332,4 +342,3 @@
 </script>
 </body>
 </html>
-
